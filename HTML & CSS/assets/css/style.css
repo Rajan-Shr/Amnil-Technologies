@@ -11,6 +11,11 @@ body {
     margin: 0px;
 }
 
+body::selection{
+  background-color: red; 
+  color: black; 
+}
+
 .navbar {
     display: flex;
     justify-content: flex-start; 
