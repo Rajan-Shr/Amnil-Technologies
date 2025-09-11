@@ -1,85 +1,114 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const storedUsers = JSON.parse(localStorage.getItem('listOfUsers')) || [];
+let isEditMode = false;
+let editIndex = null;
 
+document.addEventListener("DOMContentLoaded", function () {
+    storedUsers = getStoredUsers();
     renderUserList(storedUsers);
 
     document.getElementById("btn-submit").addEventListener("click", function (e) {
         e.preventDefault();
 
-        const newUsername = document.getElementById("username").value.trim();
-
-        // Regex to validate username (letters, numbers, and underscores only)
+        const usernameInput = document.getElementById("username");
+        const newUsername = usernameInput.value.trim();
+        const errorDisplay = document.getElementById("error-display");
         const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
 
         if (!newUsername) {
-            alert("Username cannot be empty");
+            errorDisplay.textContent = "Username cannot be empty.";
             return;
         }
 
         if (!usernameRegex.test(newUsername)) {
-            alert("Invalid Username: Username must be between 3-15 characters and can contain letters, numbers, and underscores only.");
+            errorDisplay.textContent = "Invalid Username: Username must be between 3–15 characters and can contain letters, numbers, and underscores only.";
             return;
         }
 
-        addUser(newUsername);
+        const users = getStoredUsers();
 
-        document.getElementById("username").value = "";
+        if (isEditMode) {
+            users[editIndex] = newUsername;
+            document.getElementById("popup").style.display = "inline";
+            document.getElementById("popup-message").textContent = "Username updated successfully.";
+            document.getElementById("popup").style.backgroundColor = "#27ae60";
+            setTimeout(() => {
+                document.getElementById("popup").style.display = "none";
+            }, 3000);
+            isEditMode = false;
+            editIndex = null;
+            document.getElementById("btn-submit").textContent = "Add to List";
+        } else {
+            users.push(newUsername);
+            document.getElementById("popup").style.display = "inline";
+            document.getElementById("popup-message").textContent = "Username added successfully.";
+            document.getElementById("popup").style.backgroundColor = "#27ae60";
+            setTimeout(() => {
+                document.getElementById("popup").style.display = "none";
+            }, 3000);
+        }
+
+        localStorage.setItem('listOfUsers', JSON.stringify(users));
+        usernameInput.value = "";
+        errorDisplay.textContent = "";
+
+        renderUserList(users);
     });
 });
 
-function addUser(newUsername) {
-    const storedUsers = JSON.parse(localStorage.getItem('listOfUsers')) || [];
-
-    storedUsers.push(newUsername);
-    localStorage.setItem('listOfUsers', JSON.stringify(storedUsers));
-
-    renderUserList(storedUsers);
-}
-
 function editUser(index) {
-    const storedUsers = JSON.parse(localStorage.getItem('listOfUsers')) || [];
-    const newUsername = prompt("Edit username:", storedUsers[index]);
+    const users = getStoredUsers();
+    const usernameInput = document.getElementById("username");
 
-    if (newUsername && /^[a-zA-Z0-9_]{3,15}$/.test(newUsername)) {
-        storedUsers[index] = newUsername;
-        localStorage.setItem('listOfUsers', JSON.stringify(storedUsers));
+    usernameInput.value = users[index];
+    usernameInput.focus();
 
-        renderUserList(storedUsers);
-    } else {
-        alert("Invalid username or canceled.");
-    }
+    isEditMode = true;
+    editIndex = index;
+
+    document.getElementById("btn-submit").textContent = "Update User";
+    document.getElementById("error-display").textContent = "";
 }
 
 function deleteUser(index) {
-    const storedUsers = JSON.parse(localStorage.getItem('listOfUsers')) || [];
-    storedUsers.splice(index, 1);
-    localStorage.setItem('listOfUsers', JSON.stringify(storedUsers));
+    const users = getStoredUsers();
+    users.splice(index, 1);
+    document.getElementById("popup").style.display = "inline";
+    document.getElementById("popup-message").textContent = "Username deleted successfully.";
+    document.getElementById("popup").style.backgroundColor = "#c0392b";
+    setTimeout(() => {
+        document.getElementById("popup").style.display = "none";
+    }, 3000);
 
-    renderUserList(storedUsers);
+    localStorage.setItem('listOfUsers', JSON.stringify(users));
+
+    renderUserList(users);
 }
 
-function renderUserList(storedUsers) {
+function renderUserList(users) {
     const tbody = document.getElementById("user-list");
     tbody.innerHTML = "";
 
-    if (storedUsers.length === 0) {
+    if (users.length === 0) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td colspan="3" style="text-align: center;">No records available</td>
-        `;
+        tr.innerHTML = `<td colspan="3" style="text-align: center;">No records available</td>`;
         tbody.appendChild(tr);
     } else {
-        storedUsers.forEach((username, index) => {
+        users.forEach((username, index) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>${index + 1}</td>
                 <td>${username}</td>
                 <td>
-                    <button class="edit-btn" onclick="editUser(${index})">Edit</button>
-                    <button class="delete-btn" onclick="deleteUser(${index})">Delete</button>
+                    <div class="action-buttons">
+                        <button class="edit-btn" onclick="editUser(${index})">Edit</button>
+                        <button class="delete-btn" onclick="deleteUser(${index})">Delete</button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     }
+}
+
+function getStoredUsers() {
+    return JSON.parse(localStorage.getItem('listOfUsers')) || [];
 }
