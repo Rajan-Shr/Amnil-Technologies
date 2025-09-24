@@ -39,12 +39,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const autoSlider = setInterval(() => {
         showNextSlide()
     }, 5000);
-    
+
     function showPreviousSlide() {
         slides[currentIndex].style.display = "none";
         currentIndex = currentIndex - 1;
         slides[currentIndex].style.display = "block";
-
 
         if (isFirstSlide()) {
             previousBtn.disabled = true;
@@ -65,6 +64,38 @@ document.addEventListener("DOMContentLoaded", function () {
         return currentIndex === totalSlides - 1;
     }
 
+    const imgContainer = document.querySelector(".img-container");
+    let startX = 0;
+    let isDragging = false;
+
+    imgContainer.addEventListener('mousedown', (e) => {
+        startX = e.clientX;
+        isDragging = true;
+        e.preventDefault();
+    });
+
+    imgContainer.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        const endX = e.clientX;
+        handleSwipe(startX, endX);
+        isDragging = false;
+    });
+
+
+    function handleSwipe(startX, endX) {
+        const diff = startX - endX;
+        const minSwipeDistance = 50;
+
+        if (Math.abs(diff) > minSwipeDistance) {
+            if (diff > 0 && currentIndex < totalSlides - 1) {
+                showNextSlide();
+            } else if (diff < 0 && currentIndex > 0) {
+                showPreviousSlide();
+            }
+        }
+    }
+
+    imgContainer.addEventListener('dragstart', (e) => {
+        e.preventDefault();
+    });
 });
-
-
