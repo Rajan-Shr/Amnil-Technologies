@@ -1,0 +1,30 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+
+.navbar
+{
+  padding: 10px 10px;
+  background-color: azure;
+}
+
+.navbar-ul
+{
+  display: flex;
+  flex-direction: row;
+  gap: 25px;
+  list-style: none;
+}
+
+.navbar-ul li a{
+  text-decoration: none;
+  color: black;
+}
+
+.active
+{
+  background-color: cadetblue;
+  color: whitesmoke !important;
+  padding: 10px;
+}
